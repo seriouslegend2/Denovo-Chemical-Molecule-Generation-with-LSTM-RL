@@ -1,0 +1,9 @@
+5 reference papers (must study all)
+main base papers
+preprocessing
+model
+results
+presentation
+Report (Documentation)
+c.ConfigurableHTTPProxy.auth_token = '65a68a9f9fe72794dbb568807305d6a5675190b6e1fdbacf873c76f0a7166c57'
+export CONFIGPROXY_AUTH_TOKEN=65a68a9f9fe72794dbb568807305d6a5675190b6e1fdbacf873c76f0a7166c57
