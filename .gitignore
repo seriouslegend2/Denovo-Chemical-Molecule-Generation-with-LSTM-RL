@@ -1,0 +1,8 @@
+# Ignore .pkl files in specified folders and specific files
+/procesed_data/*.pkl
+/procesed_data/split_data/*.pkl
+/procesed_data/CCAB.pkl
+/procesed_data/tokenized_data.pkl
+
+# Ignore .h5 files in specified folder
+/saved_model/Orig/*.h5
