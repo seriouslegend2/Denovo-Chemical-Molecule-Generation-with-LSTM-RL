@@ -133,8 +133,8 @@ python testRLLSTM.py
 
 | Metric              | Value   |
 |---------------------|---------|
-| Molecules Generated | 100     |
-| **Valid Molecules** | **97**  |
+| Molecules Generated | 1000     |
+| **Valid Molecules** | **970**  |
 | Validity (%)        | 97.0    |
 | Novelty (%)         | 97.0   |
 | Uniqueness (%)      | 100.0   |
