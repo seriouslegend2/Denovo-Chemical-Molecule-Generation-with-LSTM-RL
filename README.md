@@ -1,4 +1,4 @@
-#MORLD
+# MORLD
 ## Denovo-Chemical-Molecule-Generation-with-LSTM-RL
 
 A deep learning pipeline for de novo molecular generation using LSTM and reinforcement learning (REINFORCE), with support for fragment-based control and automated molecule evaluation.
