@@ -133,12 +133,13 @@ python testRLLSTM.py
 | Metric              | Value   |
 |---------------------|---------|
 | Molecules Generated | 100     |
-| **Valid Molecules** | **94**  |
-| Validity (%)        | 94.0    |
-| Novelty (%)         | 100.0   |
+| **Valid Molecules** | **97**  |
+| Validity (%)        | 97.0    |
+| Novelty (%)         | 97.0   |
+| Uniqueness (%)      | 100.0   |
 | Diversity           | 0.84    |
 | Avg QED             | 0.62    |
-| Uniqueness (%)      | 100.0   |
+
 
 **Summary:** Out of 100 generated molecules, 94 were chemically valid, all were novel, and the set exhibited high diversity and uniqueness. The average QED (quantitative estimate of drug-likeness) was 0.62, indicating good drug-like properties.
 
