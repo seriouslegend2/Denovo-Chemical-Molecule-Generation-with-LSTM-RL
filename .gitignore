@@ -1,8 +1,39 @@
-# Ignore .pkl files in specified folders and specific files
-/procesed_data/*.pkl
-/procesed_data/split_data/*.pkl
-/procesed_data/CCAB.pkl
-/procesed_data/tokenized_data.pkl
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
 
-# Ignore .h5 files in specified folder
-/saved_model/Orig/*.h5
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Model & data artifacts ---
+# NOTE: saved_model/*.keras (~11 MB each) and processed_data/CCAB.pkl (~2.5 MB)
+# are intentionally committed so the dashboard works out-of-the-box.
+# Only ignore the original repo's legacy H5 model path:
+saved_model/Orig/*.h5
+/processed_data/tokenized_data.pkl
+/processed_data/split_data/*.pkl
+
+# --- Runtime logs & scratch files ---
+*.log
+app.log
+nohup.out
+
+# --- Screenshots / scratch images at project root ---
+/image.png
+/image*.png
+/image*copy*.png
+
+# --- Generated run outputs (regenerable) ---
+run_results/
+
+# --- Editor / OS junk ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

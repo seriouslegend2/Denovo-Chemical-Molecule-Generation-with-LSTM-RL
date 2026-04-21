@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MORLD — De Novo Molecule Generator</title>
+<style>
+  :root { --bg:#0f172a; --panel:#1e293b; --accent:#22d3ee; --good:#10b981; --bad:#ef4444;
+          --text:#e2e8f0; --muted:#94a3b8; --border:#334155; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         background:var(--bg); color:var(--text); }
+  header { padding: 18px 28px; border-bottom:1px solid var(--border);
+           display:flex; justify-content:space-between; align-items:center; }
+  header h1 { margin:0; font-size:20px; letter-spacing:.3px; }
+  header small { color: var(--muted); }
+  main { display:grid; grid-template-columns: 320px 1fr; gap:20px; padding:20px; align-items:start; }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px;
+           overflow:visible; }
+  .panel h2 { margin:0 0 12px; font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+  label { display:block; font-size:12px; color:var(--muted); margin-top:10px; margin-bottom:4px; }
+  input, select { width:100%; background:#0b1222; color:var(--text); border:1px solid var(--border);
+                  border-radius:8px; padding:8px 10px; font:inherit; }
+  button { width:100%; margin-top:16px; padding:10px 14px; border:none; border-radius:8px; cursor:pointer;
+           background:linear-gradient(135deg,#22d3ee,#6366f1); color:#0b1222; font-weight:600; font-size:14px; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+  .metric { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+  .metric .v { font-size:22px; font-weight:700; color:var(--accent); }
+  .metric .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
+  .card img { width:100%; border-radius:6px; background:#fff; }
+  .smi { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; margin-top:6px;
+         color:var(--text); word-break: break-all; }
+  .badges { margin-top:6px; display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
+  .badge { font-size:10px; padding:2px 6px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+  .badge.good { background:rgba(16,185,129,.15); color:var(--good); border-color: var(--good); }
+  .badge.bad  { background:rgba(239,68,68,.15);  color:var(--bad);  border-color: var(--bad); }
+  .invalid { opacity:.55; }
+  .invalid .img-slot { display:flex; align-items:center; justify-content:center; min-height:160px;
+                       border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-size:12px; }
+  #status { color:var(--muted); font-size:12px; min-height:18px; margin-top:8px; line-height:1.4; }
+  .progress-wrap { display:none; margin-top:14px; padding:10px 12px; border-radius:10px;
+                   background:#0b1222; border:1px solid var(--border); }
+  .progress-wrap.active { display:block; }
+  .progress-wrap .bar-bg { height:10px; border-radius:999px; background:#1e293b;
+                           border:1px solid var(--border); overflow:hidden; }
+  .progress-wrap .bar { height:100%; width:0%; background:linear-gradient(90deg,#22d3ee,#6366f1);
+                        transition: width 120ms linear; }
+  .progress-wrap .lbl { display:block; text-align:center; font-size:12px; color:var(--text);
+                        margin-top:8px; padding-top:2px; line-height:1.5;
+                        font-variant-numeric: tabular-nums; white-space:nowrap;
+                        overflow:hidden; text-overflow:ellipsis; }
+  .range { display:flex; gap:8px; align-items:center; }
+  .range input[type=range] { flex:1; }
+  .range span { min-width:32px; text-align:right; font-variant-numeric: tabular-nums; font-size:12px; color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🧪 MORLD Dashboard</h1>
+    <small>LSTM + REINFORCE de novo SMILES generator</small>
+  </div>
+  <small>vocab: {{ vocab|length }} tokens · models: {{ models|join(', ') }}</small>
+</header>
+
+<main>
+  <aside class="panel">
+    <h2>Controls</h2>
+
+    <label>Model</label>
+    <select id="model">
+      {% for m in models %}<option value="{{m}}" {% if m=='rl' %}selected{% endif %}>{{m}}</option>{% endfor %}
+    </select>
+
+    <label>Number of molecules</label>
+    <div class="range"><input id="n" type="range" min="1" max="50" value="12"><span id="nV">12</span></div>
+
+    <label>Starting token</label>
+    <select id="start">
+      {% for t in vocab %}<option value="{{t}}" {% if t=='C' %}selected{% endif %}>{{t}}</option>{% endfor %}
+    </select>
+
+    <label>Temperature</label>
+    <div class="range"><input id="temp" type="range" min="0.3" max="2" step="0.1" value="1.0"><span id="tempV">1.0</span></div>
+
+    <label>Top-p (nucleus)</label>
+    <div class="range"><input id="topp" type="range" min="0.3" max="1" step="0.05" value="0.9"><span id="toppV">0.90</span></div>
+
+    <label>Goal fragment (optional, e.g. <code>CN</code>)</label>
+    <input id="goal" type="text" placeholder="CN">
+
+    <button id="go">Generate</button>
+    <div class="progress-wrap" id="progress">
+      <div class="bar-bg"><div class="bar" id="progressBar"></div></div>
+      <div class="lbl" id="progressLabel"></div>
+    </div>
+    <div id="status"></div>
+  </aside>
+
+  <section>
+    <div class="metrics" id="metrics">
+      <div class="metric"><div class="v" id="m-valid">–</div><div class="k">Validity %</div></div>
+      <div class="metric"><div class="v" id="m-novel">–</div><div class="k">Novelty %</div></div>
+      <div class="metric"><div class="v" id="m-unique">–</div><div class="k">Uniqueness %</div></div>
+      <div class="metric"><div class="v" id="m-div">–</div><div class="k">Diversity</div></div>
+      <div class="metric"><div class="v" id="m-qed">–</div><div class="k">Avg QED</div></div>
+      <div class="metric"><div class="v" id="m-total">–</div><div class="k">Generated</div></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+["n","temp","topp"].forEach(k => {
+  const el = $(k), lbl = $(k+"V");
+  const fmt = v => k==="n" ? v : Number(v).toFixed(k==="topp"?2:1);
+  el.addEventListener("input", () => lbl.textContent = fmt(el.value));
+});
+
+$("go").addEventListener("click", async () => {
+  const btn = $("go"); btn.disabled = true;
+  const prog = $("progress"), bar = $("progressBar"), lbl = $("progressLabel");
+  prog.classList.add("active");
+  bar.style.width = "0%"; lbl.textContent = "starting...";
+  $("status").textContent = "";
+  ["m-valid","m-novel","m-unique","m-div","m-qed","m-total"].forEach(id => $(id).textContent = "–");
+  const grid = $("grid"); grid.innerHTML = "";
+
+  const body = {
+    model: $("model").value,
+    n: parseInt($("n").value),
+    start: $("start").value,
+    temperature: parseFloat($("temp").value),
+    top_p: parseFloat($("topp").value),
+    goal_fragment: $("goal").value,
+  };
+
+  const appendCard = (it) => {
+    const c = document.createElement("div");
+    c.className = "card" + (it.valid ? "" : " invalid");
+    const img = it.img ? `<img src="data:image/png;base64,${it.img}">` : `<div class="img-slot">invalid SMILES</div>`;
+    const badges = [
+      `<span class="badge ${it.valid?'good':'bad'}">${it.valid?'valid':'invalid'}</span>`,
+      it.novel ? `<span class="badge good">novel</span>` : `<span class="badge">in-training</span>`,
+      it.contains_goal ? `<span class="badge good">goal✓</span>` : "",
+      it.qed != null ? `<span class="badge">QED ${it.qed}</span>` : "",
+    ].join("");
+    c.innerHTML = `${img}<div class="smi">${it.smiles}</div><div class="badges">${badges}</div>`;
+    grid.appendChild(c);
+  };
+
+  try {
+    const r = await fetch("/api/generate", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body),
+    });
+    if (!r.ok || !r.body) throw new Error("HTTP " + r.status);
+
+    const reader = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    let validCount = 0, total = body.n;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line) continue;
+        const evt = JSON.parse(line);
+        if (evt.type === "start") {
+          total = evt.total;
+          lbl.textContent = `0 / ${total} (0%)`;
+        } else if (evt.type === "item") {
+          appendCard(evt.item);
+          if (evt.item.valid) validCount++;
+          bar.style.width = evt.percent + "%";
+          lbl.textContent = `${evt.index} / ${evt.total} (${evt.percent}%) · ${validCount} valid`;
+        } else if (evt.type === "done") {
+          $("m-valid").textContent  = evt.metrics.validity_pct + "%";
+          $("m-novel").textContent  = evt.metrics.novelty_pct + "%";
+          $("m-unique").textContent = evt.metrics.uniqueness_pct + "%";
+          $("m-div").textContent    = evt.metrics.diversity;
+          $("m-qed").textContent    = evt.metrics.avg_qed;
+          $("m-total").textContent  = evt.metrics.total;
+          bar.style.width = "100%";
+          lbl.textContent = `done · ${evt.metrics.valid}/${evt.metrics.total} valid`;
+          $("status").textContent = "Complete.";
+        }
+      }
+    }
+  } catch (e) {
+    $("status").textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
